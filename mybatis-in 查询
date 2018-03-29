@@ -1,12 +1,12 @@
 ## precondition
 存在user表及User类，需要根据id做in查询。
-```sql
+```
 CREATE TABLE `user` (
   `id` int(11) DEFAULT NULL,
   `name` varchar(256) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 ```
-```java
+```
 public class User {
     private long id;
     private String name;
@@ -25,7 +25,7 @@ public class User {
 
 ## 方式一
 
-```java
+```
 @Mapper
 public interface UserMapper {
 
@@ -37,10 +37,10 @@ public interface UserMapper {
 
 }
 ```
-这是最寻常的方式，使用了#表明用的预编方式处理，但是类似<script><foreach>等嵌入的标签影响了sql的可读性。
+这是最寻常的方式，使用了#表明用的预编方式处理，但是类似`<script><foreach>`等嵌入的标签影响了sql的可读性。
 
 ## 方式二
-```java
+```
 @Mapper
 public interface UserMapper {
 
@@ -53,7 +53,7 @@ public interface UserMapper {
 
 ## 方式三
 
-```java
+```
 @Mapper
 public interface UserMapper {
     @Lang(SimpleSelectInExtendedLanguageDriver.class)
@@ -77,7 +77,7 @@ public class SimpleSelectInExtendedLanguageDriver extends XMLLanguageDriver {
 
 ```
 
-关键在于对org.apache.ibatis.annotations.Lang的使用。加上@Lang(SimpleSelectInExtendedLanguageDriver.class)这一行会让mybatis对从@Select中获取的sql进行后置处理，将(#{ids})替换成(<foreach collection='ids' item='item' separator=',' >#{item}</foreach>)，关键源码如下：
+关键在于对`org.apache.ibatis.annotations.Lang`的使用。加上`@Lang(SimpleSelectInExtendedLanguageDriver.class)`这一行会让mybatis对从@Select中获取的sql进行后置处理，将`(#{ids})`替换成`(<foreach collection='ids' item='item' separator=',' >#{item}</foreach>)`，关键源码如下：
 
 ```
 private SqlSource getSqlSourceFromAnnotations(Method method, Class<?> parameterType, LanguageDriver languageDriver) {
