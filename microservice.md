@@ -18,6 +18,8 @@
 
 ### test strategy
 - unit test: mockist vs. classic
+	- domain: black-box test with no test double
+	- controller\service\repository: white-box test with test double
 - integration test : datastores and external services
 - component test: in or out of process?
 - contract test: ensuring consistency across boundaries
