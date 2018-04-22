@@ -23,4 +23,5 @@
 - contract test: ensuring consistency across boundaries
 - end-to-end test: tips and tricks
 
+![icon.png](./image/test_strategy.png)
   
