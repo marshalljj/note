@@ -3,6 +3,7 @@
 ## 不使用iterator
 最常见对方式就是分页处理：分页读，分页处理。代码如下：
 ```
+public class Processor{
     public void execute() {
         int page = 0;
         int size = 1000;
@@ -22,9 +23,10 @@
             processOne(item);
         });
     }
-
+}
 ```
-主要缺点在于将分页细节暴露于上层,遍历和处理揉杂在一起。
+- 在同一个类里面搞定遍历和处理，违反了（SRP）.
+- 将分页细节暴露于上层,使代码难以阅读。
 
 ## 使用iterator
 ```
