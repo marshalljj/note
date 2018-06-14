@@ -48,7 +48,7 @@ public class XXXIterator {
 
     public boolean hasNext() {
         if (queueBuffer.isEmpty()) {
-            List<OrderEntity> newPage = reader.loadTopNFromId(currentId, limit);
+            List<Object> newPage = reader.loadTopNFromId(currentId, limit);
             queueBuffer.addAll(newPage);
         }
         return !queueBuffer.isEmpty();
