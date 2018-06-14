@@ -40,7 +40,7 @@ public class XXXIterator {
     private Reader reader;
     private Long currentId = 0L;
     private int limit = CommonConstants.QUERY_SIZE;
-    private Queue<OrderEntity> queueBuffer = Lists.newLinkedList();
+    private Queue<Object> queueBuffer = Lists.newLinkedList();
 
     public XXXIterator(Reader reader) {
         this.reader = reader;
