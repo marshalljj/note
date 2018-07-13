@@ -151,7 +151,7 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
     }
 ```
 
-如上代码封装了任务执行策略和错误处理策略
+如上代码封装了任务执行策略(taskExecutor)和错误处理策略(errorHandler)
 + 任务执行策略我们可以选择同步执行，也可以选择异步执行。
 + 错误处理策略有`LoggingErrorHandler`也可以自己实现。
 
