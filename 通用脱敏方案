@@ -1,0 +1,108 @@
+
+# 通用脱敏方案
+## 问题
+- 近些年来越来越严厉的监管要求，国家相关部门《个人信息保护法》即将发布，对企业在个人信息保护方面提出了更高的要求。
+- 相关部门在巡检中发现不符合要求，将进行罚款5千万或营收的4%的处罚，还可能面临APP下架的风险。
+
+
+## 目标
+脱敏的方案应该满足以下要求：
+- 通用的： 业务无侵入，减少对业务的影响，同时降低接入成本。
+- 配置化： 提升开发效率。
+
+## 解决方案
+
+- 通过 `spring` 的 `ResponseBodyAdvice`对`Controller`中方法的返回结果进行拦截处理，拦截过程如下：
+	- 如果方法未命中规则，跳过。 
+	- 如果方法命中规则，进行处理，处理方式如下：
+		- 通过规则中的 jsonPath定位要处理的字段，。
+		- 通过 规则中的 maskStrategy确定脱敏方式。
+
+```java
+
+/**
+ * @Author majian02
+ * @create 2021/7/16 2:53 下午
+ */
+@RestControllerAdvice
+@Priority(2)
+@Slf4j
+public class MaskResponseAdvice implements ResponseBodyAdvice {
+
+    @Autowired
+    private MaskRuleConfig maskRuleConfig;
+    @Autowired
+    private Map<String, MaskProcessor> maskProcessorMap;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Override
+    public boolean supports(MethodParameter returnType, Class converterType) {
+        return true;
+    }
+
+    @Override
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+        //根据方法匹配脱敏规则
+        List<MaskRule> rules = maskRuleConfig.getRules(returnType.getMethod());
+        if (rules.isEmpty()) {
+            //不存在规则：跳过
+            return body;
+        }
+        try {
+            //存在规则：遍历规则进行脱敏处理
+            DocumentContext context = JsonPath.parse(toJson(body));
+            for (MaskRule rule : rules) {
+                context.map(rule.jsonPath, (o, configuration) -> {
+                    MaskProcessor processor = maskProcessorMap.get(rule.maskStrategy);
+                    return processor.process(o.toString());
+                });
+            }
+            return context.json();
+        } catch (Exception e) {
+            //脱敏过程中出异常, 不影响业务的可用性
+            log.error("mask error.", e);
+            return body;
+        }
+    }
+
+    private String toJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException var2) {
+            throw new RuntimeException(var2.getMessage());
+        }
+    }
+
+	//脱敏规则配置中心-可结合达达业务配置一起使用
+    @Component
+    public static class MaskRuleConfig {
+
+        public List<MaskResponseAdvice.MaskRule> getRules(Method method) {
+            String className = method.getDeclaringClass().getName();
+            String methodName = className + "#" + method.getName();
+            return listRuleByMethodName(methodName);
+        }
+    }
+
+
+    @Data
+    public static class MaskRule {
+        private String jsonPath;
+        private String maskStrategy;
+    }
+}
+
+/**
+ * 脱敏处理器，不同的脱敏策略对应不同的实现
+ */
+public interface MaskProcessor {
+    
+    String process(String input);
+    
+}
+
+```
+
+## 其他
+上述代码也可以放在网关层，原理都一样。
